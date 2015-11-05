@@ -16,8 +16,23 @@
 #
 import webapp2, cgi
 
+ciper_dict = {
+'A':'N','B':'O','C':'P','D':'Q','E':'R','F':'S',
+'G':'T','H':'U','I':'V','J':'W','K':'X','L':'Y',
+'M':'Z',
+'a':'n','b':'o','c':'p','d':'q','e':'r','f':'s',
+'g':'t','h':'u','i':'v','j':'w','k':'x','l':'y',
+'m':'z'}
+
 def escape_html(s):
     return cgi.escape(s, quote = True)
+
+def ciper_char(text):
+    for key in ciper_dict.keys():
+        text = text.replace(key, ciper_dict[key])
+        text = text.replace(ciper_dict[key], key)
+    return text
+        
 
 form="""
 <!DOCTYPE html>
@@ -50,6 +65,7 @@ class Unit2Rot13Handler(webapp2.RequestHandler):
         self.write_form()
     def post(self):
         gTxt = self.request.get('text')
+        gTxt = ciper_char(gTxt)
         self.write_form(gTxt)
 
 
