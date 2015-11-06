@@ -16,6 +16,101 @@
 #
 import webapp2, cgi
 
+
+form="""
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Unit 2 Rot 13</title>
+  </head>
+
+  <body>
+    <h2>Enter some text to ROT13:</h2>
+    <form method="post">
+      <textarea name="text"
+                style="height: 100px; width: 400px;">%(gTxt)s</textarea>
+      <br>
+      <input type="submit">
+    </form>
+  </body>
+
+</html>
+"""
+
+form_sign_up="""
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Sign Up</title>
+    <style type="text/css">
+      .label {text-align: right}
+      .error {color: red}
+    </style>
+
+  </head>
+
+  <body>
+    <h2>Signup</h2>
+    <form method="post">
+      <table>
+        <tr>
+          <td class="label">
+            Username
+          </td>
+          <td>
+            <input type="text" name="username" value="%(username)s">
+          </td>
+          <td class="error">
+            %(typeerror1)s
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label">
+            Password
+          </td>
+          <td>
+            <input type="password" name="password" value="%(password)s">
+          </td>
+          <td class="error">
+            %(typeerror2)s
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label">
+            Verify Password
+          </td>
+          <td>
+            <input type="password" name="verify" value="%(verify)s">
+          </td>
+          <td class="error">
+            %(typeerror3)s
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label">
+            Email (optional)
+          </td>
+          <td>
+            <input type="text" name="email" value="%(email)s">
+          </td>
+          <td class="error">
+            %(typeerror4)s
+          </td>
+        </tr>
+      </table>
+
+      <input type="submit">
+    </form>
+  </body>
+
+</html>
+"""
+
 ciper_dict = {
 'A':'N','B':'O','C':'P','D':'Q','E':'R','F':'S',
 'G':'T','H':'U','I':'V','J':'W','K':'X','L':'Y',
@@ -40,27 +135,11 @@ def ciper_char(text):
             result = result + char
     return result
         
-
-form="""
-<!DOCTYPE html>
-
-<html>
-  <head>
-    <title>Unit 2 Rot 13</title>
-  </head>
-
-  <body>
-    <h2>Enter some text to ROT13:</h2>
-    <form method="post">
-      <textarea name="text"
-                style="height: 100px; width: 400px;">%(gTxt)s</textarea>
-      <br>
-      <input type="submit">
-    </form>
-  </body>
-
-</html>
-"""
+def valid_username(username):
+    if username not in ' ':
+        return username
+        
+ 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
         self.response.write('Hello world!')
@@ -75,7 +154,34 @@ class Unit2Rot13Handler(webapp2.RequestHandler):
         gTxt = ciper_char(gTxt)
         self.write_form(gTxt)
 
+class Unit2SignUpHandler(webapp2.RequestHandler):
+    def write_form(self, username="", password="", verify="", email="",
+                    typeeror1="", typeeror2="", typeeror3="", typeeror4=""):
+        #self.response.out.write(form % {"gTxt": escape_html(gTxt)})
+        self.response.out.write(form_sign_up % {"username": escape_html(username),
+                                                "password": escape_html(password),
+                                                "verify": escape_html(verify),
+                                                "email": escape_html(email),
+                                                "typeerror1": typeeror1,
+                                                "typeerror2": typeeror2,
+                                                "typeerror3": typeeror3,
+                                                "typeerror4": typeeror4})
+    def get(self):
+        self.write_form()
+    def post(self):
+        user_username = self.request.get('username')
+        password = self.request.get('password')
+        verify = self.request.get('verify')
+        email = self.request.get('email')
+        
+        username = valid_username(user_username)
+        
+        errormsg1 = "That is invalid"
+        if not username:
+            self.write_form(username, password, verify, email, errormsg1)
+            
+        
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler), ('/unit2/rot13', Unit2Rot13Handler)
+    ('/', MainHandler), ('/unit2/rot13', Unit2Rot13Handler), ('/unit2/signup', Unit2SignUpHandler)
 ], debug=True)
