@@ -201,7 +201,13 @@ class Unit2SignUpHandler(webapp2.RequestHandler):
         email = self.request.get('email')
         
         
-        if not (valid_username(username), valid_password(password), valid_password(verify), valid_email(email)) or password != verify:
+        if not valid_username(username):
+            self.write_form(username, password, verify, email, "1")
+        elif not valid_password(password):
+            self.write_form(username, password, verify, email, "1")
+        elif password != verify:
+            self.write_form(username, password, verify, email, "1")
+        elif email != "" and (not valid_email(email)):
             self.write_form(username, password, verify, email, "1")
         else:
             self.redirect("/unit2/welcome?username="+username)
