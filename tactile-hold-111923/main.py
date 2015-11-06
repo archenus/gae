@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import webapp2, cgi
+import webapp2, cgi, re
 
 
 form="""
@@ -123,6 +123,10 @@ ciper_dict = {
 's':'f','t':'g','u':'h','v':'i','w':'j','x':'k',
 'y':'l','z':'m',}
 
+USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+PWD_RE = re.compile(r"^.{3,20}$")
+EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
+
 def escape_html(s):
     return cgi.escape(s, quote = True)
 
@@ -134,11 +138,15 @@ def ciper_char(text):
         else:
             result = result + char
     return result
-        
+
 def valid_username(username):
-    if username not in ' ':
-        return username
-        
+    return USER_RE.match(username)
+    
+def valid_password(password):
+    return PWD_RE.match(password)
+
+def valid_email(email):
+    return EMAIL_RE.match(email)        
  
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -155,30 +163,48 @@ class Unit2Rot13Handler(webapp2.RequestHandler):
         self.write_form(gTxt)
 
 class Unit2SignUpHandler(webapp2.RequestHandler):
-    def write_form(self, username="", password="", verify="", email="",
-                    typeeror1="", typeeror2="", typeeror3="", typeeror4=""):
-        #self.response.out.write(form % {"gTxt": escape_html(gTxt)})
+    def write_form(self, username="", password="", verify="", email="", flag=""):
+        
+        typeerror1 = ""
+        typeerror2 = ""
+        typeerror3 = ""
+        typeerror4 = ""
+        
+        if flag != "":
+            if not valid_username(username) :
+                typeerror1 = "That's not a valid username. "
+                
+            if not valid_password(password):
+                typeerror2 = "That wasn't a valid password. "
+            elif password != verify:
+                typeerror3 = "Your passwords didn't match."
+                
+            if not valid_email(email) and email != "":
+                typeerror4 = "That's not a valid email."
+        
         self.response.out.write(form_sign_up % {"username": escape_html(username),
-                                                "password": escape_html(password),
-                                                "verify": escape_html(verify),
+                                                "password": "",
+                                                "verify": "",
                                                 "email": escape_html(email),
-                                                "typeerror1": typeeror1,
-                                                "typeerror2": typeeror2,
-                                                "typeerror3": typeeror3,
-                                                "typeerror4": typeeror4})
+                                                "typeerror1": typeerror1,
+                                                "typeerror2": typeerror2,
+                                                "typeerror3": typeerror3,
+                                                "typeerror4": typeerror4})
+                                                
+
     def get(self):
         self.write_form()
     def post(self):
-        user_username = self.request.get('username')
+        username = self.request.get('username')
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
         
-        username = valid_username(user_username)
         
-        errormsg1 = "That is invalid"
-        if not username:
-            self.write_form(username, password, verify, email, errormsg1)
+        if not (valid_username(username), valid_password(password), valid_password(verify), valid_email(email)):
+            self.write_form(username, password, verify, email, "1")
+        else:
+            self.write_form(username, password, verify, email, "1")
             
         
 
