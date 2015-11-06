@@ -201,13 +201,16 @@ class Unit2SignUpHandler(webapp2.RequestHandler):
         email = self.request.get('email')
         
         
-        if not (valid_username(username), valid_password(password), valid_password(verify), valid_email(email)):
+        if not (valid_username(username), valid_password(password), valid_password(verify), valid_email(email)) or password != verify:
             self.write_form(username, password, verify, email, "1")
         else:
-            self.write_form(username, password, verify, email, "1")
+            self.redirect("/unit2/welcome?username="+username)
             
-        
+class Unit2WelcomeHandler(webapp2.RequestHandler):
+    def get(self):
+        username = self.request.get('username')
+        self.response.out.write("Welcome, " +username+ "!")     
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler), ('/unit2/rot13', Unit2Rot13Handler), ('/unit2/signup', Unit2SignUpHandler)
+    ('/', MainHandler), ('/unit2/rot13', Unit2Rot13Handler), ('/unit2/signup', Unit2SignUpHandler), ('/unit2/welcome', Unit2WelcomeHandler)
 ], debug=True)
